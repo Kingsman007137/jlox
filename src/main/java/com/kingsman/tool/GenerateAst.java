@@ -58,7 +58,7 @@ public class GenerateAst {
 
         // The base accept() method.
         writer.println();
-        writer.println("  abstract <R> R accept(Visitor<R> visitor);");
+        writer.println("    abstract <R> R accept(Visitor<R> visitor);");
 
         writer.println("}");
         writer.close();
@@ -76,36 +76,36 @@ public class GenerateAst {
     private static void defineType(
             PrintWriter writer, String baseName,
             String className, String fieldList) {
-        writer.println("  static class " + className + " extends " +
-                baseName + " {");
+        writer.println("    static class " + className + " extends " +
+                baseName + "    {");
 
         // Constructor.
-        writer.println("    " + className + "(" + fieldList + ") {");
+        writer.println("        " + className + "(" + fieldList + ") {");
 
         // Store parameters in fields.
         String[] fields = fieldList.split(", ");
         for (String field : fields) {
             String name = field.split(" ")[1];
-            writer.println("      this." + name + " = " + name + ";");
+            writer.println("        this." + name + " = " + name + ";");
         }
 
-        writer.println("    }");
+        writer.println("        }");
 
         // Visitor pattern.
         writer.println();
-        writer.println("    @Override");
-        writer.println("    <R> R accept(Visitor<R> visitor) {");
-        writer.println("      return visitor.visit" +
+        writer.println("        @Override");
+        writer.println("        <R> R accept(Visitor<R> visitor) {");
+        writer.println("            return visitor.visit" +
                 className + baseName + "(this);");
-        writer.println("    }");
+        writer.println("        }");
 
         // Fields.
         writer.println();
         for (String field : fields) {
-            writer.println("    final " + field + ";");
+            writer.println("        final " + field + ";");
         }
 
-        writer.println("  }");
+        writer.println("    }");
     }
 
     /**
@@ -118,15 +118,15 @@ public class GenerateAst {
      */
     private static void defineVisitor(PrintWriter writer, String baseName, List<String> types) {
         // use generics to let each implementation fill in a return type.
-        writer.println("  interface Visitor<R> {");
+        writer.println("    interface Visitor<R> {");
 
         for (String type : types) {
             String typeName = type.split(":")[0].trim();
-            writer.println("    R visit" + typeName + baseName + "(" +
+            writer.println("        R visit" + typeName + baseName + "(" +
                     typeName + " " + baseName.toLowerCase() + ");");
         }
 
-        writer.println("  }");
+        writer.println("    }");
 
     }
 }
