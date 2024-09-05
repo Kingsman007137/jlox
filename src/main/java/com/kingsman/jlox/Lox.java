@@ -67,12 +67,17 @@ public class Lox {
 
     /**
      * Error handling
+     * shows the token’s location and the token itself
      *
-     * @param line
+     * @param token
      * @param message
      */
-    static void error(int line, String message) {
-        report(line, "", message);
+    static void error(Token token, String message) {
+        if (token.type == TokenType.EOF) {
+            report(token.line, " at end", message);
+        } else {
+            report(token.line, " at '" + token.lexeme + "'", message);
+        }
     }
 
     /**
