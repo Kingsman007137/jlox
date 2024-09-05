@@ -108,6 +108,7 @@ class Parser {
             return new Expr.Grouping(expr);
         }
 
+        // a token that can’t start an expression
         throw error(peek(), "Expect expression.");
     }
 
@@ -189,5 +190,32 @@ class Parser {
         Lox.error(token, message);
 
         return new ParseError();
+    }
+
+    /**
+     * Discards tokens until it finds a statement boundary
+     */
+    private void synchronize() {
+        advance();
+
+        while (!isAtEnd()) {
+            if (previous().type == SEMICOLON) return;
+
+            // Most statements start with a keyword—for, if, return, var, etc.
+            // When the next token is any of those, it is probably the start of a statement.
+            switch (peek().type) {
+                case CLASS:
+                case FUN:
+                case VAR:
+                case FOR:
+                case IF:
+                case WHILE:
+                case PRINT:
+                case RETURN:
+                    return;
+            }
+
+            advance();
+        }
     }
 }
