@@ -56,6 +56,8 @@ public class Lox {
 
             // If the user makes a mistake, it shouldn’t kill their entire session.
             hadError = false;
+            // If the user is running the REPL, we don’t care about tracking runtime errors.
+            // After they are reported, we simply loop around and let them input new code and keep going.
         }
     }
 
