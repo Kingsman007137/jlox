@@ -1,13 +1,18 @@
 package com.kingsman.jlox;
 
+import java.util.List;
+
 /**
  * Visitor pattern
+ * Unlike expressions, statements produce no values,
+ * so the return type of the visit methods is Void
  */
-public class Interpreter implements Expr.Visitor<Object> {
-    void interpret(Expr expression) {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
@@ -85,6 +90,22 @@ public class Interpreter implements Expr.Visitor<Object> {
         return null;
     }
 
+
+
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        // return null to fit the Void return type
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println((stringify(value)));
+        return null;
+    }
+
     /**
      * sends the expression back into the interpreter’s visitor implementation
      * @param expression
@@ -92,6 +113,14 @@ public class Interpreter implements Expr.Visitor<Object> {
      */
     private Object evaluate(Expr expression) {
         return expression.accept(this);
+    }
+
+    /**
+     * sends the statement back into the interpreter’s visitor implementation
+     * @param statement
+     */
+    private void execute(Stmt statement) {
+        statement.accept(this);
     }
 
     /**
