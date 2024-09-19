@@ -28,4 +28,18 @@ public class Environment {
         throw new RuntimeError(name,
                 "Undefined variable '" + name.lexeme + "'.");
     }
+
+    /**
+     * assign a new value to a variable
+     */
+    void assign(Token name, Object value) {
+        // assignment is not allowed to create a new variable
+        if (values.containsKey(name.lexeme)) {
+            values.put(name.lexeme, value);
+            return;
+        }
+
+        throw new RuntimeError(name,
+                "Undefined variable '" + name.lexeme + "'.");
+    }
 }

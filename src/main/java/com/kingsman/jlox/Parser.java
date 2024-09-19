@@ -78,9 +78,32 @@ class Parser {
         return new Stmt.Expression(expr);
     }
 
-    // expression -> equality ;
+    // expression -> assignment ;
     private Expr expression() {
-        return equality();
+        return assignment();
+    }
+
+    // assignment -> IDENTIFIER "=" assignment | equality ;
+    private Expr assignment() {
+        Expr expr = equality();
+
+        if (match(EQUAL)) {
+            Token equals = previous();
+            // assignment is right-associative, recursively call assignment() to parse the right-hand side.
+            Expr value = assignment();
+
+            if (expr instanceof Expr.Variable) {
+                Token name = ((Expr.Variable) expr).name;
+                return new Expr.Assign(name, value);
+            }
+
+            // We report an error if the left-hand side isn’t a valid assignment target,
+            // but we don’t throw it because the parser isn’t in a confused state where
+            // we need to go into panic mode and synchronize.
+            error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
     }
 
     // equality -> comparison ( ( "!=" | "==" ) comparison )* ;
