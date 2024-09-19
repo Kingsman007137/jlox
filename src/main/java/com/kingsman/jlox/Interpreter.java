@@ -129,6 +129,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return value;
     }
 
+    @Override
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
     /**
      * sends the expression back into the interpreter’s visitor implementation
      * @param expression
@@ -204,5 +210,27 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         return object.toString();
+    }
+
+    /**
+     * executes a list of statements in the context of a given environment.
+     * @param statements
+     * @param environment
+     */
+    private void executeBlock(List<Stmt> statements,
+                              Environment environment) {
+        // preserves the previous environment
+        Environment previous = this.environment;
+        try {
+            // updates the environment to the given one
+            this.environment = environment;
+
+            for (Stmt statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            // restores the previous environment
+            this.environment = previous;
+        }
     }
 }
