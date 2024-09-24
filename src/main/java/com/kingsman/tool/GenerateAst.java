@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * prints out the Java code needed to define a class
  * Ast (Abstract Syntax Tree)
- * a tiny Java command-line app that generates a file named Expr.java
+ * a tiny Java command-line app that generates a file named Expr.java or Stmt.java
  */
 public class GenerateAst {
     // don't know what args should be
@@ -33,7 +33,8 @@ public class GenerateAst {
                 "If         : Expr condition, Stmt thenBranch," +
                             " Stmt elseBranch",
                 "Print      : Expr expression",
-                "Var        : Token name, Expr initializer"
+                "Var        : Token name, Expr initializer",
+                "While      : Expr condition, Stmt body"
         ));
     }
 
