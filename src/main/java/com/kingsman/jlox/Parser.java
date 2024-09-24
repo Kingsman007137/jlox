@@ -1,6 +1,7 @@
 package com.kingsman.jlox;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.kingsman.jlox.TokenType.*;
@@ -57,14 +58,63 @@ class Parser {
         return new Stmt.Var(name, initializer);
     }
 
-    // statement -> exprStmt | printStmt | block | ifStmt | whileStmt;
+    // statement -> exprStmt | printStmt | block | ifStmt | whileStmt | forStmt ;
     private Stmt statement() {
         if (match(IF)) return ifStatement();
         if (match(PRINT)) return printStatement();
         if (match(WHILE)) return whileStatement();
+        if (match(FOR)) return forStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
 
         return expressionStatement();
+    }
+
+    // forStmt -> "for" "(" ( varDeclaration | exprStmt | ";" ) expression? ";" expression? ")" statement ;
+    // not use Interpreter.java's implementation, try to desugar it.
+    private Stmt forStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'for'.");
+
+        Stmt initializer;
+        if (match(SEMICOLON)) {
+            initializer = null;
+        } else if (match(VAR)) {
+            initializer = varDeclaration();
+        } else {
+            initializer = expressionStatement();
+        }
+
+        Expr condition = null;
+        if (!check(SEMICOLON)) {
+            condition = expression();
+        }
+        consume(SEMICOLON, "Expect ';' after loop condition.");
+
+        Expr increment = null;
+        if (!check(RIGHT_PAREN)) {
+            increment = expression();
+        }
+        consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+        Stmt body = statement();
+
+        // the increment executes after the body in each iteration of the loop
+        if (increment != null) {
+            body = new Stmt.Block(
+                    Arrays.asList(
+                            body,
+                            new Stmt.Expression(increment)));
+        }
+
+        if (condition == null) condition = new Expr.Literal(true);
+        body = new Stmt.While(condition, body);
+
+        // initializer executes before the loop starts,  runs once before the entire loop.
+        // do that by replacing the whole statement with a block that runs the initializer
+        // and then executes the loop.
+        if (initializer != null) {
+            body = new Stmt.Block(Arrays.asList(initializer, body));
+        }
+
+        return body;
     }
 
     // whileStmt -> "while" "(" expression ")" statement ;
