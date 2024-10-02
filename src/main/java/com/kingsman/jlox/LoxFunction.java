@@ -4,9 +4,13 @@ import java.util.List;
 
 public class LoxFunction implements LoxCallable {
     private final Stmt.Function declaration;
+    // holds on to the surrounding variables where the function is declared.
+    // use to implement local function scope.
+    private final Environment closure;
 
-    LoxFunction(Stmt.Function declaration) {
+    LoxFunction(Stmt.Function declaration, Environment closure) {
         this.declaration = declaration;
+        this.closure = closure;
     }
 
     @Override
@@ -17,9 +21,10 @@ public class LoxFunction implements LoxCallable {
     @Override
     public Object call(Interpreter interpreter,
                        List<Object> arguments) {
-        // If there are multiple calls to the same function in play at the same time,
-        // each needs its own environment, even though they are all calls to the same function.
-        Environment environment = new Environment(interpreter.globals);
+        // This creates an environment chain that goes from the function’s body out
+        // through the environments where the function is declared, all the way out
+        // to the global scope.
+        Environment environment = new Environment(closure);
         for (int i = 0; i < declaration.params.size(); i++) {
             environment.define(declaration.params.get(i).lexeme,
                     arguments.get(i));
