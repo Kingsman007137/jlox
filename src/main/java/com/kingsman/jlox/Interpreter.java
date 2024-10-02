@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     // holds a fixed reference to the outermost global environment.
-    private final Environment globals = new Environment();
+    final Environment globals = new Environment();
     // tracks the current environment
     private Environment environment = globals;
 
@@ -179,6 +179,13 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitFunctionStmt(Stmt.Function stmt) {
+        LoxFunction function = new LoxFunction(stmt);
+        environment.define(stmt.name.lexeme, function);
+        return null;
+    }
+
+    @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
         Object value = evaluate(stmt.expression);
         System.out.println((stringify(value)));
@@ -303,8 +310,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      * @param statements
      * @param environment
      */
-    private void executeBlock(List<Stmt> statements,
-                              Environment environment) {
+    void executeBlock(List<Stmt> statements,
+                      Environment environment) {
         // preserves the previous environment
         Environment previous = this.environment;
         try {

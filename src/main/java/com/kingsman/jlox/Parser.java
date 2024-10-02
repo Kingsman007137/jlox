@@ -31,10 +31,11 @@ class Parser {
         return statements;
     }
 
-    // declaration -> varDeclaration | statement ;
+    // declaration -> varDeclaration | statement | funDeclaration ;
     private Stmt declaration() {
         try {
             if (match(VAR)) return varDeclaration();
+            if (match(FUN)) return function("function");
 
             return statement();
         } catch (ParseError error) {
@@ -43,6 +44,28 @@ class Parser {
             synchronize();
             return null;
         }
+    }
+
+    // funDeclaration -> "fun" function ;
+    // function -> IDENTIFIER "(" parameters? ")" block ;
+    private Stmt function(String kind) {
+        // use "kind" because we may have other kinds of functions in the future(like methods)
+        Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+        consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+        List<Token> parameters = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 255) {
+                    error(peek(), "Can't have more than 255 parameters.");
+                }
+                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        List<Stmt> body = block();
+        return new Stmt.Function(name, parameters, body);
     }
 
     // varDeclaration -> "var" IDENTIFIER ( "=" expression )? ";" ;

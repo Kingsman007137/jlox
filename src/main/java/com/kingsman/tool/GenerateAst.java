@@ -11,7 +11,7 @@ import java.util.List;
  * a tiny Java command-line app that generates a file named Expr.java or Stmt.java
  */
 public class GenerateAst {
-    // don't know what args should be
+    // args should be "src/main/java/com/kingsman/jlox"
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
             System.err.println("Usage: generate_ast <output directory>");
@@ -31,6 +31,8 @@ public class GenerateAst {
         defineAst(outputDir, "Stmt", Arrays.asList(
                 "Block      : List<Stmt> statements",
                 "Expression : Expr expression",
+                "Function   : Token name, List<Token> params," +
+                            " List<Stmt> body",
                 "If         : Expr condition, Stmt thenBranch," +
                             " Stmt elseBranch",
                 "Print      : Expr expression",
