@@ -5,11 +5,37 @@ import java.util.List;
 
 /**
  * Visitor pattern
+ * <p>
  * Unlike expressions, statements produce no values,
  * so the return type of the visit methods is Void
  */
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    private Environment environment = new Environment();
+    // holds a fixed reference to the outermost global environment.
+    private final Environment globals = new Environment();
+    // tracks the current environment
+    private Environment environment = globals;
+
+    // when we instantiate an Interpreter, we stuff the native
+    // function in that global scope.
+    Interpreter() {
+        // The clock function is a native function returns the
+        // current time in seconds since the Unix epoch.
+        globals.define("clock", new LoxCallable() {
+            @Override
+            public int arity() { return 0; }
+
+            @Override
+            public Object call(Interpreter interpreter,
+                               List<Object> arguments) {
+                return (double)System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public String toString() { return "<native fn>"; }
+        });
+        // If we wanted to add other native functions, we could add them each as
+        // their own anonymous class that implements LoxCallable like clock.
+    }
 
     void interpret(List<Stmt> statements) {
         try {
