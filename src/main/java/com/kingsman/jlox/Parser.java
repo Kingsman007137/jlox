@@ -81,10 +81,11 @@ class Parser {
         return new Stmt.Var(name, initializer);
     }
 
-    // statement -> exprStmt | printStmt | block | ifStmt | whileStmt | forStmt ;
+    // statement -> exprStmt | printStmt | block | ifStmt | whileStmt | forStmt | returnStmt;
     private Stmt statement() {
         if (match(IF)) return ifStatement();
         if (match(PRINT)) return printStatement();
+        if (match(RETURN)) return returnStatement();
         if (match(WHILE)) return whileStatement();
         if (match(FOR)) return forStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
@@ -184,6 +185,20 @@ class Parser {
         Expr value = expression();
         consume(SEMICOLON, "Expect ';' after value.");
         return new Stmt.Print(value);
+    }
+
+    // returnStmt -> "return" expression? ";" ;
+    private Stmt returnStatement() {
+        Token keyword = previous();
+        // every function should have a return statement
+        // even if it doesn't return a value, it returns nil
+        Expr value = null;
+        if (!check(SEMICOLON)) {
+            value = expression();
+        }
+
+        consume(SEMICOLON, "Expect ';' after return value.");
+        return new Stmt.Return(keyword, value);
     }
 
     // exprStmt -> expression ";" ;
