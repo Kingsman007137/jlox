@@ -62,4 +62,32 @@ public class Environment {
         throw new RuntimeError(name,
                 "Undefined variable '" + name.lexeme + "'.");
     }
+
+    /**
+     * walks the chain of environments to find the one a certain distance away,
+     * reach the environment that we know contains the variable
+     */
+    Environment ancestor(int distance) {
+        Environment environment = this;
+        for (int i = 0; i < distance; i++) {
+            environment = environment.enclosing;
+        }
+
+        return environment;
+    }
+
+    /**
+     * now we know exactly which environment in the chain will have the variable,
+     * returns the value of the variable in the specific environment’s map
+     */
+    Object getAt(Integer distance, String lexeme) {
+        return ancestor(distance).values.get(lexeme);
+    }
+
+    /**
+     * like getAt() but for assignment
+     */
+    public void assignAt(Integer distance, Token name, Object value) {
+        ancestor(distance).values.put(name.lexeme, value);
+    }
 }
