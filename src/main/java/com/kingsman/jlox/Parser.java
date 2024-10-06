@@ -31,10 +31,11 @@ class Parser {
         return statements;
     }
 
-    // declaration -> varDeclaration | statement | funDeclaration ;
+    // declaration -> varDeclaration | statement | funDeclaration | classDeclaration ;
     private Stmt declaration() {
         try {
             if (match(VAR)) return varDeclaration();
+            if (match(CLASS)) return classDeclaration();
             if (match(FUN)) return function("function");
 
             return statement();
@@ -46,9 +47,24 @@ class Parser {
         }
     }
 
+    // classDeclaration -> "class" IDENTIFIER "{" function* "}" ;
+    private Stmt classDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect class name.");
+
+        List<Stmt.Function> methods = new ArrayList<>();
+        consume(LEFT_BRACE, "Expect '{' before class body.");
+        // inside a class, we can only have methods, not fields
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(function("method"));
+        }
+        consume(RIGHT_BRACE, "Expect '}' after class body.");
+
+        return new Stmt.Class(name, methods);
+    }
+
     // funDeclaration -> "fun" function ;
     // function -> IDENTIFIER "(" parameters? ")" block ;
-    private Stmt function(String kind) {
+    private Stmt.Function function(String kind) {
         // use "kind" because we may have other kinds of functions in the future(like methods)
         Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
         consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
