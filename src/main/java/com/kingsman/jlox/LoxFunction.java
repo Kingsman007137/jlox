@@ -7,10 +7,12 @@ public class LoxFunction implements LoxCallable {
     // holds on to the surrounding variables where the function is declared.
     // use to implement local function scope.
     private final Environment closure;
+    private final boolean isInitializer;
 
-    LoxFunction(Stmt.Function declaration, Environment closure) {
+    LoxFunction(Stmt.Function declaration, Environment closure, boolean isInitializer) {
         this.declaration = declaration;
         this.closure = closure;
+        this.isInitializer = isInitializer;
     }
 
     @Override
@@ -33,8 +35,13 @@ public class LoxFunction implements LoxCallable {
         try {
             interpreter.executeBlock(declaration.body, environment);
         } catch (Return returnValue) {
+            // If the function is an initializer, return the instance.
+            if (isInitializer) return closure.getAt(0, "this");
+
             return returnValue.value;
         }
+
+        if (isInitializer) return closure.getAt(0, "this");
 
         // If it doesn't catch anything, that means the function doesn't
         // explicitly return a value, we implicitly return nil.
@@ -52,9 +59,10 @@ public class LoxFunction implements LoxCallable {
      * @param loxInstance
      * @return
      */
-    public Object bind(LoxInstance loxInstance) {
+    public LoxFunction bind(LoxInstance loxInstance) {
         Environment environment = new Environment(closure);
         environment.define("this", loxInstance);
-        return new LoxFunction(declaration, environment);
+        return new LoxFunction(declaration, environment,
+                isInitializer);
     }
 }
