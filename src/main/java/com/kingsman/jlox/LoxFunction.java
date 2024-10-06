@@ -45,4 +45,16 @@ public class LoxFunction implements LoxCallable {
     public String toString() {
         return "<fn " + declaration.name.lexeme + ">";
     }
+
+    /**
+     * create a new environment nestled inside the method’s original closure.
+     * when the method is called, that will become the parent of the method body’s environment.
+     * @param loxInstance
+     * @return
+     */
+    public Object bind(LoxInstance loxInstance) {
+        Environment environment = new Environment(closure);
+        environment.define("this", loxInstance);
+        return new LoxFunction(declaration, environment);
+    }
 }
