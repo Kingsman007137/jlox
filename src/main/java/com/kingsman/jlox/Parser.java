@@ -229,7 +229,7 @@ class Parser {
         return assignment();
     }
 
-    // assignment -> IDENTIFIER "=" assignment | logic_or ;
+    // assignment -> (call "." )? IDENTIFIER "=" assignment | logic_or ;
     private Expr assignment() {
         Expr expr = or();
 
@@ -241,6 +241,10 @@ class Parser {
             if (expr instanceof Expr.Variable) {
                 Token name = ((Expr.Variable) expr).name;
                 return new Expr.Assign(name, value);
+            } else if (expr instanceof Expr.Get) {
+                // We turn the get expression into a set expression to set its value.
+                Expr.Get get = (Expr.Get) expr;
+                return new Expr.Set(get.object, get.name, value);
             }
 
             // We report an error if the left-hand side isn’t a valid assignment target,
@@ -346,13 +350,17 @@ class Parser {
         return call();
     }
 
-    // call -> primary ( "(" arguments? ")" )* ;
+    // call -> primary ( "(" arguments? ")" )* | "." IDENTIFIER ;
     private Expr call() {
         Expr expr = primary();
 
         while (true) {
             if (match(LEFT_PAREN)) {
                 expr = finishCall(expr);
+            } else if (match(DOT)) { // class property access
+                Token name = consume(IDENTIFIER,
+                        "Expect property name after '.'.");
+                expr = new Expr.Get(expr, name);
             } else {
                 break;
             }
