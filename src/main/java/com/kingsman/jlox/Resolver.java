@@ -69,6 +69,12 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         declare(stmt.name);
         define(stmt.name);
 
+        if (stmt.superclass != null &&
+                stmt.name.lexeme.equals(stmt.superclass.name.lexeme)) {
+            Lox.error(stmt.superclass.name,
+                    "A class can't inherit from itself.");
+        }
+
         // whenever a "this" expression is encountered (at least inside a method)
         // it will resolve to a “local variable” defined in an implicit scope
         // just outside the block for the method body.
