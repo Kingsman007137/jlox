@@ -50,6 +50,10 @@ class LoxClass implements LoxCallable {
             return methods.get(lexeme);
         }
 
+        if (superclass != null) {
+            return superclass.findMethod(name);
+        }
+
         return null;
     }
 }
