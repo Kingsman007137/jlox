@@ -75,6 +75,16 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
                     "A class can't inherit from itself.");
         }
 
+        if (stmt.superclass != null) {
+            resolve(stmt.superclass);
+        }
+
+        if (stmt.superclass != null) {
+            // create a new scope surrounding all the class's superclass methods
+            beginScope();
+            scopes.peek().put("super", true);
+        }
+
         // whenever a "this" expression is encountered (at least inside a method)
         // it will resolve to a “local variable” defined in an implicit scope
         // just outside the block for the method body.
@@ -90,6 +100,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             resolveFunction(method, declaration);
         }
         endScope();
+
+        if (stmt.superclass != null) endScope();
 
         currentClass = enclosingClass;
         return null;
@@ -232,6 +244,14 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitSetExpr(Expr.Set expr) {
         resolve(expr.value);
         resolve(expr.object);
+        return null;
+    }
+
+    @Override
+    public Void visitSuperExpr(Expr.Super expr) {
+        // resolve it exactly like any other local variable, because
+        // superclass stored in a specific environment
+        resolveLocal(expr, expr.keyword);
         return null;
     }
 
